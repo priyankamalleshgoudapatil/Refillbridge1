@@ -6,7 +6,7 @@ import { ChevronUp, Clock, FlaskConical, Hourglass, UserRoundCog } from 'lucide-
 import { homeRouteFor, ROLE_LABELS } from '@shared/domain/permissions.ts';
 import { authService } from '@/services';
 import { USERS, type UserFixture } from '@/mocks/data/fixtures';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { cn } from '@/lib/format';
 import { useAuth } from './auth-context';
 
@@ -20,7 +20,7 @@ export function DevRoleSwitcher() {
   const qc = useQueryClient();
 
   useEffect(() => {
-    if (import.meta.env.MODE === 'test') return;
+    if (import.meta.env.MODE === 'test' || !isSupabaseConfigured) return;
     let active = true;
     supabase
       .from('users')
@@ -41,7 +41,9 @@ export function DevRoleSwitcher() {
             }))
           );
         }
-      });
+      },
+      () => {}
+    );
     return () => {
       active = false;
     };

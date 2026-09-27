@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { matchPatient } from '@shared/domain/triage-rules.ts';
 import type { CaseRow, MockEngine } from '../mock/engine';
 import type { ActorType } from '@shared/types.ts';
@@ -32,6 +32,7 @@ function defaultNextAction(status: string): string {
  * state machine, and permissions reflect the live Supabase data.
  */
 export async function syncFromSupabase(eng: MockEngine): Promise<void> {
+  if (!isSupabaseConfigured) return;
   try {
     const [
       orgsRes,
@@ -338,7 +339,7 @@ export async function syncFromSupabase(eng: MockEngine): Promise<void> {
  * cases, case_notes, case_tasks, patients, or users changes in Supabase.
  */
 export function setupRealtimeSync(eng: MockEngine, onChange: () => void): void {
-  if (realtimeSubscribed || typeof window === 'undefined') return;
+  if (!isSupabaseConfigured || realtimeSubscribed || typeof window === 'undefined') return;
   realtimeSubscribed = true;
 
   try {
@@ -374,6 +375,7 @@ export function setupRealtimeSync(eng: MockEngine, onChange: () => void): void {
  * Persists a newly created case to Supabase.
  */
 export async function persistNewCase(c: CaseRow): Promise<void> {
+  if (!isSupabaseConfigured) return;
   try {
     await supabase.from('cases').insert({
       id: c.id,
@@ -411,6 +413,7 @@ export async function persistCaseNote(note: {
   body: string;
   createdAt: string;
 }): Promise<void> {
+  if (!isSupabaseConfigured) return;
   try {
     await supabase.from('case_notes').insert({
       id: note.id,
@@ -428,6 +431,7 @@ export async function persistCaseNote(note: {
  * Persists a task completion to Supabase.
  */
 export async function persistTaskCompletion(taskId: string): Promise<void> {
+  if (!isSupabaseConfigured) return;
   try {
     await supabase.from('case_tasks').update({ status: 'done' }).eq('id', taskId);
   } catch (err) {
@@ -439,6 +443,7 @@ export async function persistTaskCompletion(taskId: string): Promise<void> {
  * Persists a case assignment or ownership claim to Supabase.
  */
 export async function persistCaseOwner(caseId: string, ownerUserId: string | null): Promise<void> {
+  if (!isSupabaseConfigured) return;
   try {
     await supabase
       .from('cases')
@@ -453,6 +458,7 @@ export async function persistCaseOwner(caseId: string, ownerUserId: string | nul
  * Persists a patient match confirmation to Supabase.
  */
 export async function persistPatientMatch(caseId: string, patientId: string): Promise<void> {
+  if (!isSupabaseConfigured) return;
   try {
     await supabase
       .from('cases')
@@ -475,6 +481,7 @@ export async function persistCaseTransition(
   action: string,
   actor: { id: string; name: string; role: string },
 ): Promise<void> {
+  if (!isSupabaseConfigured) return;
   try {
     await supabase
       .from('cases')

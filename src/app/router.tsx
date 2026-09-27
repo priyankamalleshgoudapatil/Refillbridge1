@@ -75,7 +75,7 @@ function RootLayout() {
 function RouteError() {
   const err = useRouteError();
   console.error(JSON.stringify({ level: 'error', event: 'route.error', details: { message: err instanceof Error ? err.name : 'unknown' } }));
-  return <CrashScreen reference={crypto.randomUUID()} />;
+  return <CrashScreen reference={crypto.randomUUID()} error={err instanceof Error ? err : undefined} />;
 }
 
 const practice = PRACTICE_ROLES;

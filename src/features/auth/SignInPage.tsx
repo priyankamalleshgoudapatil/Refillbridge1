@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Field';
 import { ApiError, authService, friendlyMessage } from '@/services';
 import { DEMO_MFA_CODE, DEMO_PASSWORD, ORGS, USERS, type UserFixture } from '@/mocks/data/fixtures';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { AuthLayout } from './AuthLayout';
 import { FormAlert, PasswordInput, safeNext } from './auth-shared';
 
@@ -159,7 +159,7 @@ function DemoAccounts({ onPick }: { onPick: (email: string) => void }) {
   const [users, setUsers] = useState<UserFixture[]>(USERS);
 
   useEffect(() => {
-    if (import.meta.env.MODE === 'test') return;
+    if (import.meta.env.MODE === 'test' || !isSupabaseConfigured) return;
     let active = true;
     supabase
       .from('users')
@@ -180,7 +180,9 @@ function DemoAccounts({ onPick }: { onPick: (email: string) => void }) {
             }))
           );
         }
-      });
+      },
+      () => {}
+    );
     return () => {
       active = false;
     };
