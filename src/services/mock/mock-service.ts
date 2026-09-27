@@ -25,13 +25,6 @@ import { sessionStore } from '../session';
 import { hashInput, LOW_CONFIDENCE, mockExtract, mockExtractFromFile, MOCK_MODEL, PROMPT_VERSIONS } from './ai-mock';
 import { getEngine, notifyChange, resetEngine } from './backend';
 import { newCtx, patientTemplateText, randomToken, uid, type AiSuggestionRow, type CaseRow, type MockEngine, type UserRow } from './engine';
-import {
-  persistCaseNote,
-  persistCaseOwner,
-  persistCaseTransition,
-  persistNewCase,
-  persistTaskCompletion,
-} from '../real/supabase-sync';
 
 const IS_TEST = import.meta.env.MODE === 'test';
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -52,6 +45,46 @@ async function gate(fn: string, latency: [number, number] = [300, 800]) {
   }
 }
 const isEmpty = (fn: string) => params().get('mockEmpty') === fn;
+
+function persistNewCase(c: CaseRow) {
+  import('../real/supabase-sync')
+    .then((m) => m.persistNewCase(c))
+    .catch((err) => console.warn('[mock-service] Failed to persist new case:', err));
+}
+
+function persistCaseTransition(
+  c: CaseRow,
+  action: string,
+  actor: { id: string; name: string; role: string },
+) {
+  import('../real/supabase-sync')
+    .then((m) => m.persistCaseTransition(c, action, actor))
+    .catch((err) => console.warn('[mock-service] Failed to persist case transition:', err));
+}
+
+function persistCaseOwner(caseId: string, ownerUserId: string | null) {
+  import('../real/supabase-sync')
+    .then((m) => m.persistCaseOwner(caseId, ownerUserId))
+    .catch((err) => console.warn('[mock-service] Failed to persist case owner:', err));
+}
+
+function persistCaseNote(note: {
+  id: string;
+  caseId: string;
+  authorName: string;
+  body: string;
+  createdAt: string;
+}) {
+  import('../real/supabase-sync')
+    .then((m) => m.persistCaseNote(note))
+    .catch((err) => console.warn('[mock-service] Failed to persist note:', err));
+}
+
+function persistTaskCompletion(taskId: string) {
+  import('../real/supabase-sync')
+    .then((m) => m.persistTaskCompletion(taskId))
+    .catch((err) => console.warn('[mock-service] Failed to persist task completion:', err));
+}
 
 interface Me {
   eng: MockEngine;

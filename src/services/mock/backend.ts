@@ -1,7 +1,6 @@
 // Singleton mock backend + live workers (outbox + SLA) that tick like pg_cron would.
 import { MockEngine } from './engine';
 import { buildSeededEngine } from './seed';
-import { setupRealtimeSync, syncFromSupabase } from '../real/supabase-sync';
 
 const IS_TEST = import.meta.env.MODE === 'test';
 
@@ -16,16 +15,24 @@ export function getEngine(): MockEngine {
     engine = buildSeededEngine();
     if (!IS_TEST && typeof window !== 'undefined' && !syncing && !synced) {
       syncing = true;
-      syncFromSupabase(engine)
-        .then(() => {
-          synced = true;
-          syncing = false;
-          notifyChange();
-          if (engine) setupRealtimeSync(engine, notifyChange);
+      import('../real/supabase-sync')
+        .then(({ syncFromSupabase, setupRealtimeSync }) => {
+          if (!engine) return;
+          syncFromSupabase(engine)
+            .then(() => {
+              synced = true;
+              syncing = false;
+              notifyChange();
+              if (engine) setupRealtimeSync(engine, notifyChange);
+            })
+            .catch((err) => {
+              syncing = false;
+              console.warn('[backend] Initial Supabase sync error:', err);
+            });
         })
         .catch((err) => {
           syncing = false;
-          console.warn('[backend] Initial Supabase sync error:', err);
+          console.warn('[backend] Failed to load supabase-sync:', err);
         });
     }
   }

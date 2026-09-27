@@ -4,12 +4,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { PHARMACY_ROLES, PRACTICE_ROLES } from '@shared/types.ts';
 import { onBackendChange } from '@/services/mock/backend';
 import { Spinner } from '@/components/ui/States';
-import { AppShell } from './AppShell';
 import { AuthProvider, useAuth } from './auth-context';
 import { CrashScreen } from './ErrorBoundary';
 import { RequireAuth, RequireRole } from './guards';
 import { setUnauthenticatedHandler } from './query-client';
 
+const AppShell = lazy(() => import('./AppShell'));
 const LandingPage = lazy(() => import('@/features/landing/LandingPage'));
 const SignInPage = lazy(() => import('@/features/auth/SignInPage'));
 const SignUpPage = lazy(() => import('@/features/auth/SignUpPage'));

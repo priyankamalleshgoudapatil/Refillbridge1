@@ -196,3 +196,5 @@ function UserCard({ onSignOut }: { onSignOut: () => void }) {
     </div>
   );
 }
+
+export default AppShell;
