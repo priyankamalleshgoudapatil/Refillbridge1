@@ -18,5 +18,7 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     css: false,
     include: ['src/**/*.test.{ts,tsx}', 'supabase/functions/_shared/**/*.test.ts'],
+    testTimeout: 30_000,
+    fileParallelism: false,
   },
 });

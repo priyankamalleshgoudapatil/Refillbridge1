@@ -49,12 +49,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       intentionalSignOut.current = false;
       setUser(authService.currentUser());
     });
-    const unsubBackend = onBackendChange(() => setUser((u) => (u ? authService.currentUser() ?? u : u)));
+    const unsubBackend = onBackendChange(() => {
+      setUser((u) => (u ? authService.currentUser() ?? u : u));
+      qc.invalidateQueries();
+    });
     return () => {
       unsubSession();
       unsubBackend();
     };
-  }, [user]);
+  }, [user, qc]);
 
   const signOut = useCallback(
     async (reason: 'idle' | 'manual' | 'removed' = 'manual') => {

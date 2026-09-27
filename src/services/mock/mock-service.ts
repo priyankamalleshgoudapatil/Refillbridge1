@@ -25,6 +25,13 @@ import { sessionStore } from '../session';
 import { hashInput, LOW_CONFIDENCE, mockExtract, mockExtractFromFile, MOCK_MODEL, PROMPT_VERSIONS } from './ai-mock';
 import { getEngine, notifyChange, resetEngine } from './backend';
 import { newCtx, patientTemplateText, randomToken, uid, type AiSuggestionRow, type CaseRow, type MockEngine, type UserRow } from './engine';
+import {
+  persistCaseNote,
+  persistCaseOwner,
+  persistCaseTransition,
+  persistNewCase,
+  persistTaskCompletion,
+} from '../real/supabase-sync';
 
 const IS_TEST = import.meta.env.MODE === 'test';
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -366,6 +373,14 @@ export const mockRefillService: RefillService = {
     const page = Math.max(q.page ?? 1, 1);
     if (isEmpty('listCases')) return { data: [], meta: { page, limit, total: 0 } };
     let rows = eng.db.cases.filter((c) => (practiceView ? c.practiceOrgId === user.orgId : c.pharmacyOrgId === user.orgId));
+    const seenIds = new Set<string>();
+    const seenCaseNums = new Set<string>();
+    rows = rows.filter((c) => {
+      if (seenIds.has(c.id) || seenCaseNums.has(c.caseNumber)) return false;
+      seenIds.add(c.id);
+      seenCaseNums.add(c.caseNumber);
+      return true;
+    });
     const status = q.status ?? 'OPEN';
     if (status === 'OPEN') rows = rows.filter((c) => !isTerminal(c.status));
     else if (status !== 'ALL' && CASE_STATUSES.includes(status)) rows = rows.filter((c) => c.status === status);
@@ -447,6 +462,7 @@ export const mockRefillService: RefillService = {
         }
       }
       notifyChange();
+      if (!IS_TEST) persistNewCase(c);
       return detailFor(m, c);
     });
   },
@@ -464,6 +480,7 @@ export const mockRefillService: RefillService = {
       const ctx = newCtx(m.user, m.aal);
       m.eng.apply(c, input.action, ctx, input.payload ?? {});
       notifyChange();
+      if (!IS_TEST) persistCaseTransition(c, input.action, { id: m.user.id, name: m.user.name, role: m.user.role });
       return detailFor(m, c);
     });
   },
@@ -513,6 +530,7 @@ export const mockRefillService: RefillService = {
     c.updatedAt = m.eng.nowIso();
     m.eng.addEvent(c, newCtx(m.user, m.aal), { eventType: 'case.claimed', title: `Claimed by ${m.user.name}` });
     notifyChange();
+    if (!IS_TEST) persistCaseOwner(c.id, m.user.id);
     return detailFor(m, c);
   },
 
@@ -528,6 +546,7 @@ export const mockRefillService: RefillService = {
     c.updatedAt = m.eng.nowIso();
     m.eng.addEvent(c, newCtx(m.user, m.aal), { eventType: 'case.assigned', title: `Assigned to ${target.name} by ${m.user.name}` });
     notifyChange();
+    if (!IS_TEST) persistCaseOwner(c.id, target.id);
     return detailFor(m, c);
   },
 
@@ -601,6 +620,7 @@ export const mockRefillService: RefillService = {
     m.eng.db.notes.push(note);
     m.eng.addEvent(c, newCtx(m.user, m.aal), { eventType: 'note.added', title: 'Internal note added' });
     notifyChange();
+    if (!IS_TEST) persistCaseNote(note);
     return note;
   },
 
@@ -634,6 +654,7 @@ export const mockRefillService: RefillService = {
     t.status = 'done';
     m.eng.addEvent(c, newCtx(m.user, m.aal), { eventType: 'task.done', title: `Task done: ${t.title}` });
     notifyChange();
+    if (!IS_TEST) persistTaskCompletion(t.id);
   },
 
   async retryDispatch(caseId) {
@@ -786,13 +807,25 @@ export const mockRefillService: RefillService = {
     if (isEmpty('getAnalyticsSummary') || cases.length === 0) {
       return { northStarPct: 0, medianHoursToConfirm: 0, touchesPerRefill: 0, infoRoundTrips: 0, slaBreachRate: 0, aiAcceptanceRate: 0, openCases: 0, resolvedCases: 0, casesByStatus: [], topBlockers: [], weekly: [], byPharmacy: [] };
     }
-    const confirmedAt = (c: CaseRow) => eng.db.events.find((e) => e.caseId === c.id && e.eventType === 'pharmacy.acknowledged')?.createdAt;
+    const confirmedAt = (c: CaseRow) => {
+      const ev = eng.db.events.find((e) =>
+        e.caseId === c.id &&
+        (e.eventType === 'pharmacy.acknowledged' || e.toStatus === 'PHARMACY_CONFIRMED' || e.eventType === 'PHARMACY_ACKNOWLEDGED')
+      );
+      if (ev) return ev.createdAt;
+      const isConfirmedState = ['PHARMACY_CONFIRMED', 'FILLING', 'READY_FOR_PICKUP', 'DISPENSED'].includes(c.status) || (c.status === 'CLOSED' && c.resolution === 'completed');
+      if (isConfirmedState) return c.statusSince || c.updatedAt;
+      return undefined;
+    };
     const confirmed = cases.map((c) => ({ c, at: confirmedAt(c) })).filter((x): x is { c: CaseRow; at: string } => Boolean(x.at));
     const hours = confirmed.map((x) => (new Date(x.at).getTime() - new Date(x.c.createdAt).getTime()) / 3_600_000).sort((a, b) => a - b);
     const median = hours.length ? hours[Math.floor(hours.length / 2)] : 0;
     const within = hours.filter((h) => h <= 48).length;
     const touches = cases.map((c) => eng.db.events.filter((e) => e.caseId === c.id && e.actorType === 'user').length);
-    const escalated = cases.filter((c) => eng.db.events.some((e) => e.caseId === c.id && e.eventType === 'sla.escalated')).length;
+    const escalated = cases.filter((c) => eng.db.events.some((e) =>
+      e.caseId === c.id &&
+      (e.eventType === 'sla.escalated' || e.reason?.includes('SLA'))
+    )).length;
     const ai = eng.db.ai.filter((a) => a.orgId === user.orgId && a.outcome);
     const blockerCounts = new Map<BlockerCode, number>();
     for (const c of cases) for (const b of c.blockers) blockerCounts.set(b.code, (blockerCounts.get(b.code) ?? 0) + 1);
@@ -803,13 +836,16 @@ export const mockRefillService: RefillService = {
       .map((o) => {
         const pc = confirmed.filter((x) => x.c.pharmacyOrgId === o.id);
         const acks = pc.map((x) => {
-          const sent = eng.db.events.find((e) => e.caseId === x.c.id && e.eventType === 'dispatch.sent')?.createdAt;
+          const sent = eng.db.events.find((e) =>
+            e.caseId === x.c.id &&
+            (e.eventType === 'dispatch.sent' || e.toStatus === 'SENT_TO_PHARMACY' || e.eventType === 'DISPATCH_SUCCEEDED')
+          )?.createdAt;
           return sent ? (new Date(x.at).getTime() - new Date(sent).getTime()) / 3_600_000 : 0;
         }).sort((a, b) => a - b);
         return { name: o.name, cases: cases.filter((c) => c.pharmacyOrgId === o.id).length, medianAckHours: acks.length ? Math.round(acks[Math.floor(acks.length / 2)] * 10) / 10 : 0 };
       });
     return {
-      northStarPct: hours.length ? Math.round((within / hours.length) * 100) : 0,
+      northStarPct: hours.length ? Math.round((within / hours.length) * 100) : 100,
       medianHoursToConfirm: Math.round(median * 10) / 10,
       touchesPerRefill: Math.round((touches.reduce((a, b) => a + b, 0) / cases.length) * 10) / 10,
       infoRoundTrips: Math.round((eng.db.infoRequests.filter((r) => cases.some((c) => c.id === r.caseId)).length / cases.length) * 100) / 100,

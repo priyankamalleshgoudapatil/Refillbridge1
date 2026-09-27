@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'motion/react';
 import { ChevronUp, Clock, FlaskConical, Hourglass, UserRoundCog } from 'lucide-react';
 import { homeRouteFor, ROLE_LABELS } from '@shared/domain/permissions.ts';
 import { authService } from '@/services';
-import { USERS } from '@/mocks/data/fixtures';
+import { USERS, type UserFixture } from '@/mocks/data/fixtures';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/format';
 import { useAuth } from './auth-context';
 
@@ -13,12 +14,41 @@ import { useAuth } from './auth-context';
 export function DevRoleSwitcher() {
   const [open, setOpen] = useState(false);
   const [aal1, setAal1] = useState(false);
+  const [usersList, setUsersList] = useState<UserFixture[]>(USERS);
   const { user, refresh, simulateIdleWarning, simulateExpiry } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
 
+  useEffect(() => {
+    if (import.meta.env.MODE === 'test') return;
+    let active = true;
+    supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: true })
+      .then(({ data, error }) => {
+        if (!error && data && data.length > 0 && active) {
+          setUsersList(
+            data.map((u) => ({
+              id: u.id,
+              key: u.key,
+              name: u.name,
+              email: u.email,
+              role: u.role,
+              orgId: u.org_id,
+              title: u.title,
+              mfaEnrolled: Boolean(u.mfa_enrolled),
+            }))
+          );
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const switchTo = (key: string) => {
-    const u = USERS.find((x) => x.key === key)!;
+    const u = usersList.find((x) => x.key === key)!;
     authService.devSwitchUser(key, aal1 ? 'aal1' : 'aal2');
     qc.clear();
     refresh();
@@ -43,7 +73,7 @@ export function DevRoleSwitcher() {
               <p className="text-[12px] text-ink-500">Switch role instantly. Data resets on page refresh.</p>
             </div>
             <ul className="max-h-[300px] overflow-y-auto p-1.5">
-              {USERS.map((u) => (
+              {usersList.map((u) => (
                 <li key={u.key}>
                   <button
                     type="button"

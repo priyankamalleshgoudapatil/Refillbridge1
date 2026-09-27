@@ -15,7 +15,7 @@ describe('Refill queue', () => {
   it('lists open cases with KPI tiles', async () => {
     setupDemo('jordan');
     renderRoutes(routes, '/queue');
-    expect((await screen.findAllByText('James Carter')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Manjunath Rao')).length).toBeGreaterThan(0);
     expect(screen.getByText('Open cases')).toBeInTheDocument();
     expect(screen.getByText('Urgent (≤ 2 days supply)')).toBeInTheDocument();
   });
@@ -23,8 +23,8 @@ describe('Refill queue', () => {
   it('reads filters from the URL (deep link)', async () => {
     setupDemo('jordan');
     renderRoutes(routes, '/queue?status=NEEDS_PATIENT_MATCH');
-    expect((await screen.findAllByText('Robert Nguyen')).length).toBeGreaterThan(0);
-    expect(screen.queryByText('James Carter')).not.toBeInTheDocument();
+    expect((await screen.findAllByText('Harshitha Gowda')).length).toBeGreaterThan(0);
+    expect(screen.queryByText('Manjunath Rao')).not.toBeInTheDocument();
   });
 
   it('shows the no-match empty state and clears filters', async () => {

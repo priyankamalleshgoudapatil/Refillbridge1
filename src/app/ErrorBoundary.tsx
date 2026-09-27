@@ -22,11 +22,11 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
 
   render() {
     if (!this.state.error) return this.props.children;
-    return <CrashScreen reference={this.state.reference} onRetry={() => this.setState({ error: null })} />;
+    return <CrashScreen reference={this.state.reference} onRetry={() => this.setState({ error: null })} error={this.state.error} />;
   }
 }
 
-export function CrashScreen({ reference, onRetry }: { reference: string; onRetry?: () => void }) {
+export function CrashScreen({ reference, onRetry, error }: { reference: string; onRetry?: () => void; error?: Error }) {
   return (
     <div className="hero-backdrop flex min-h-screen items-center justify-center p-6">
       <div className="surface max-w-md p-8 text-center">
@@ -36,6 +36,13 @@ export function CrashScreen({ reference, onRetry }: { reference: string; onRetry
         <h1 className="text-2xl font-light text-brand-900">Something went wrong</h1>
         <p className="mt-2 text-sm text-ink-500">We hit an unexpected problem. Your data is safe. Try again, and if it keeps happening, share this reference with support.</p>
         <p className="mt-4 rounded-lg bg-ice-100 px-3 py-2 font-mono text-xs text-ink-600">Reference: {reference.slice(0, 8)}</p>
+        {error && (
+          <div className="mt-4 rounded-lg bg-red-100 px-3 py-2 text-left font-mono text-xs text-red-900 overflow-auto max-h-40">
+            <strong>{error.name}:</strong> {error.message}
+            <br />
+            {error.stack}
+          </div>
+        )}
         <div className="mt-6 flex justify-center gap-2">
           <button type="button" onClick={() => (window.location.href = '/')} className="rounded-lg border border-line-strong bg-white px-4 py-2 text-sm font-medium hover:bg-brand-50">
             Go home

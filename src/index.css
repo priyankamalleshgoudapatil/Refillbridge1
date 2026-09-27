@@ -53,12 +53,19 @@
   --shadow-glow: 0 0 0 1px rgb(58 145 166 / 0.18), 0 12px 32px -8px rgb(58 145 166 / 0.35);
 
   --animate-float: float 7s ease-in-out infinite;
+  --animate-float-slow: float-slow 14s ease-in-out infinite alternate;
   --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
   --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-pop-in: pop-in 0.35s ease-out;
+  --animate-fade-in: fade-in 0.25s ease-out;
 
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
+  }
+  @keyframes float-slow {
+    0% { transform: translateY(0) scale(1); }
+    100% { transform: translateY(-24px) scale(1.02); }
   }
   @keyframes pulse-ring {
     0% { transform: scale(0.9); opacity: 0.7; }
@@ -67,6 +74,14 @@
   @keyframes shimmer {
     0% { background-position: -400px 0; }
     100% { background-position: 400px 0; }
+  }
+  @keyframes pop-in {
+    0% { opacity: 0; transform: translateY(8px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes fade-in {
+    0% { opacity: 0; transform: translateY(4px); }
+    100% { opacity: 1; transform: translateY(0); }
   }
 }
 

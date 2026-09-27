@@ -1,13 +1,25 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ArrowLeft, FileLock2, ShieldCheck, Users } from 'lucide-react';
+import { ArrowLeft, BellRing, Eye, UserCheck } from 'lucide-react';
 import { Logo } from '@/components/ui/Layout';
 
-const TRUST_POINTS = [
-  { icon: ShieldCheck, title: 'MFA on every clinical decision', text: 'Providers confirm the exact order before it is sent.' },
-  { icon: FileLock2, title: 'Append-only audit trail', text: 'Every change is recorded with who, what and when.' },
-  { icon: Users, title: 'Minimum-necessary sharing', text: 'Pharmacies see only what they need to fill.' },
+const FEATURES = [
+  {
+    icon: Eye,
+    title: 'Real-time refill visibility',
+    text: 'See where every request stands and what needs attention.',
+  },
+  {
+    icon: UserCheck,
+    title: 'Clear ownership',
+    text: 'Every blocker is routed to the right person with a defined next action.',
+  },
+  {
+    icon: BellRing,
+    title: 'Patient-ready updates',
+    text: 'Keep patients informed without the follow-up chase.',
+  },
 ];
 
 interface AuthLayoutProps {
@@ -34,15 +46,19 @@ export function AuthLayout({ title, description, eyebrow, children, below, foote
         </Link>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }} className="relative max-w-md">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-200">Refill coordination</p>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-200">Refill visibility</p>
           <blockquote className="mt-4 font-display text-[34px] leading-[1.15] tracking-tight text-white xl:text-[40px]">
-            <span className="font-light">One shared case.</span> <span className="font-bold">One owner.</span> <span className="font-light">One next step.</span>
+            <span className="font-light">Every refill.</span> <br />
+            <span className="font-bold">One clear path</span> <br />
+            <span className="font-light">forward.</span>
           </blockquote>
-          <p className="mt-4 text-[15px] leading-relaxed text-brand-100/85">The practice, the pharmacy and the patient finally look at the same thing — and nobody has to chase.</p>
+          <p className="mt-4 text-[15px] leading-relaxed text-brand-100/85">
+            Pharmacies, care teams and patients share the same status, the same context and the same next step.
+          </p>
         </motion.div>
 
         <ul className="relative space-y-4">
-          {TRUST_POINTS.map((p, i) => (
+          {FEATURES.map((p, i) => (
             <motion.li
               key={p.title}
               initial={{ opacity: 0, x: -12 }}
@@ -74,16 +90,18 @@ export function AuthLayout({ title, description, eyebrow, children, below, foote
           </Link>
         </div>
 
-        <div className="relative mx-auto flex w-full max-w-[440px] flex-1 flex-col justify-center py-8">
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: 'easeOut' }} className="glass rounded-2xl p-6 shadow-[var(--shadow-lift)] sm:p-8">
-            {eyebrow && <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-600">{eyebrow}</p>}
-            <h1 className="mt-1.5 text-[26px] leading-tight text-brand-900 sm:text-[28px]">{title}</h1>
-            {description && <p className="mt-2 text-sm leading-relaxed text-ink-600">{description}</p>}
-            <div className="mt-6">{children}</div>
-          </motion.div>
-          {footer && <div className="mt-5 text-center text-sm text-ink-600">{footer}</div>}
+        <div className="relative mx-auto flex w-full max-w-[880px] flex-1 flex-col justify-center py-8">
+          <div className="mx-auto w-full max-w-[440px]">
+            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, ease: 'easeOut' }} className="glass rounded-2xl p-6 shadow-[var(--shadow-lift)] sm:p-8">
+              {eyebrow && <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-600">{eyebrow}</p>}
+              <h1 className="mt-1.5 text-[26px] leading-tight text-brand-900 sm:text-[28px]">{title}</h1>
+              {description && <p className="mt-2 text-sm leading-relaxed text-ink-600">{description}</p>}
+              <div className="mt-6">{children}</div>
+            </motion.div>
+            {footer && <div className="mt-5 text-center text-sm text-ink-600">{footer}</div>}
+          </div>
           {below && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.45 }} className="mt-6">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.45 }} className="mt-6 w-full">
               {below}
             </motion.div>
           )}

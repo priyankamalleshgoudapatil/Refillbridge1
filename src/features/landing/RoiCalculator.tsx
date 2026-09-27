@@ -1,23 +1,11 @@
-import { useEffect, useId, useState } from 'react';
-import { animate, motion, useMotionValue, useTransform } from 'motion/react';
+import { useId, useState } from 'react';
 import { Calculator, Info } from 'lucide-react';
 import { computeRoi, PRICE_PER_PROVIDER, ROI_DEFAULTS, type RoiInputs } from './roi';
-import { fadeUp, RevealGroup } from './landing-ui';
+import { Reveal, RevealGroup, AnimatedNumber } from './landing-ui';
 
 const usd = (v: number) => v.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 const num = (v: number) => Math.round(v).toLocaleString('en-US');
 const mult = (v: number) => `${v.toFixed(1)}×`;
-
-/** Number that tweens to its new value; the final value is always what's in the DOM for assistive tech. */
-function AnimatedNumber({ value, format }: { value: number; format: (v: number) => string }) {
-  const mv = useMotionValue(value);
-  const text = useTransform(mv, format);
-  useEffect(() => {
-    const controls = animate(mv, value, { duration: 0.55, ease: 'easeOut' });
-    return () => controls.stop();
-  }, [mv, value]);
-  return <motion.span>{text}</motion.span>;
-}
 
 const FIELDS: { key: keyof RoiInputs; label: string; min: number; max: number; step: number; prefix?: string; suffix?: string }[] = [
   { key: 'providers', label: 'Providers', min: 1, max: 200, step: 1 },
@@ -84,7 +72,7 @@ export function RoiCalculator() {
 
   return (
     <RevealGroup className="mt-12 grid gap-6 lg:grid-cols-[1.15fr_1fr]">
-      <motion.form variants={fadeUp} onSubmit={(e) => e.preventDefault()} className="surface space-y-6 p-5 sm:p-7" aria-label="ROI calculator inputs">
+      <Reveal as="form" delay={0} onSubmit={(e: React.FormEvent) => e.preventDefault()} className="surface space-y-6 p-5 sm:p-7" aria-label="ROI calculator inputs">
         <div className="flex items-center gap-2 text-brand-800">
           <Calculator className="size-5" aria-hidden />
           <h3 className="text-[16px] font-semibold">Your practice</h3>
@@ -92,11 +80,11 @@ export function RoiCalculator() {
         {FIELDS.map((f) => (
           <SliderField key={f.key} field={f} value={inputs[f.key]} onChange={set(f.key)} />
         ))}
-      </motion.form>
+      </Reveal>
 
-      <motion.div variants={fadeUp} className="relative overflow-hidden rounded-[var(--radius-card)] bg-gradient-to-br from-brand-800 to-brand-950 p-5 text-white shadow-[var(--shadow-lift)] sm:p-7">
+      <Reveal delay={120} className="relative overflow-hidden rounded-[var(--radius-card)] bg-gradient-to-br from-brand-800 to-brand-950 p-5 text-white shadow-[var(--shadow-lift)] sm:p-7">
         <div className="window-light pointer-events-none absolute inset-0 opacity-15" aria-hidden />
-        <div className="pointer-events-none absolute -right-16 -top-16 size-56 rounded-full bg-brand-400/30 blur-3xl" aria-hidden />
+        <div className="animate-float-slow pointer-events-none absolute -right-16 -top-16 size-56 rounded-full bg-brand-400/30 blur-3xl" aria-hidden />
         <div className="relative">
           <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-200">Estimated return</p>
           <p className="mt-3 font-display text-[56px] font-bold leading-none tracking-tight sm:text-[64px]">
@@ -119,7 +107,7 @@ export function RoiCalculator() {
             Illustrative estimate only. Value = refills × minutes ÷ 60 × hourly cost + calls × minutes per call ÷ 60 × hourly cost. Your pilot measures your real baseline.
           </p>
         </div>
-      </motion.div>
+      </Reveal>
     </RevealGroup>
   );
 }

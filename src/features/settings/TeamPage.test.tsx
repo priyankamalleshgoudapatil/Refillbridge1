@@ -9,18 +9,18 @@ describe('TeamPage', () => {
 
   it('lists members with role and status', async () => {
     renderRoute(<TeamPage />, { path: '/settings/team' });
-    expect((await screen.findAllByText('Priya Shah')).length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Jordan Ellis').length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Priyanka Patil')).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Vinod Kumar').length).toBeGreaterThan(0);
     expect(screen.getAllByText('staff@lakeside.example.com').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Active').length).toBeGreaterThan(0);
     // Pharmacy users are never listed in a practice team
-    expect(screen.queryByText('Lena Novak')).not.toBeInTheDocument();
+    expect(screen.queryByText('Lakshmi Rao')).not.toBeInTheDocument();
   });
 
   it('invites a member and shows the demo invite link', async () => {
     const user = userEvent.setup();
     renderRoute(<TeamPage />, { path: '/settings/team' });
-    await screen.findAllByText('Priya Shah');
+    await screen.findAllByText('Priyanka Patil');
 
     await user.click(screen.getByRole('button', { name: /invite member/i }));
     const dialog = await screen.findByRole('dialog', { name: /invite a team member/i });
@@ -45,7 +45,7 @@ describe('TeamPage', () => {
   it('validates the invite email inline', async () => {
     const user = userEvent.setup();
     renderRoute(<TeamPage />, { path: '/settings/team' });
-    await screen.findAllByText('Priya Shah');
+    await screen.findAllByText('Priyanka Patil');
     await user.click(screen.getByRole('button', { name: /invite member/i }));
     const dialog = await screen.findByRole('dialog');
     await user.type(within(dialog).getByLabelText(/email/i), 'not-an-email');
@@ -56,9 +56,9 @@ describe('TeamPage', () => {
   it('surfaces the last-admin error as a toast', async () => {
     const user = userEvent.setup();
     renderRoute(<TeamPage />, { path: '/settings/team' });
-    await screen.findAllByText('Priya Shah');
-    await user.click(screen.getAllByRole('button', { name: /remove priya shah/i })[0]);
-    const dialog = await screen.findByRole('dialog', { name: /remove priya shah/i });
+    await screen.findAllByText('Priyanka Patil');
+    await user.click(screen.getAllByRole('button', { name: /remove priyanka patil/i })[0]);
+    const dialog = await screen.findByRole('dialog', { name: /remove priyanka patil/i });
     await user.click(within(dialog).getByRole('button', { name: /^remove$/i }));
     expect(await screen.findByText(/needs at least one admin/i)).toBeInTheDocument();
   });

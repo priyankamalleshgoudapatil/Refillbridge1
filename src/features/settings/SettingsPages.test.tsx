@@ -45,7 +45,7 @@ describe('ProfilePage', () => {
 
   it('shows account details and MFA status', () => {
     renderRoute(<ProfilePage />, { path: '/settings/profile' });
-    expect(screen.getByText('Priya Shah')).toBeInTheDocument();
+    expect(screen.getByText('Priyanka Patil')).toBeInTheDocument();
     expect(screen.getByText('Practice admin')).toBeInTheDocument();
     expect(screen.getByText(/enabled — verified this session/i)).toBeInTheDocument();
     expect(screen.getByText(/15 minutes idle or 12 hours total/i)).toBeInTheDocument();

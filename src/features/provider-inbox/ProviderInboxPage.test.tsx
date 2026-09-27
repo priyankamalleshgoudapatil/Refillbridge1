@@ -24,7 +24,7 @@ describe('Provider inbox & decision panel', () => {
     renderRoutes(routes, `/provider/inbox/${id}`);
     await user.click(await screen.findByRole('button', { name: /Review order/ }));
     const dialog = await screen.findByRole('dialog', { name: /Confirm your decision/ });
-    expect(within(dialog).getByText(/James Carter/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Manjunath Rao/)).toBeInTheDocument();
     expect(within(dialog).getByText(/Lisinopril 20 mg/)).toBeInTheDocument();
     expect(within(dialog).getByText('CityCare Pharmacy')).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: /Confirm & sign/ }));

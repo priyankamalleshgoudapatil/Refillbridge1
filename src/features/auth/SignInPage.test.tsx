@@ -45,7 +45,7 @@ describe('SignInPage', () => {
   it('fills the form when a demo account is clicked', async () => {
     const user = userEvent.setup();
     setup();
-    await user.click(screen.getByRole('button', { name: /jordan ellis/i }));
+    await user.click(screen.getByRole('button', { name: /vinod kumar/i }));
     expect(screen.getByLabelText(/^email/i)).toHaveValue('staff@lakeside.example.com');
     expect(screen.getByLabelText(/^password/i)).toHaveValue('Refill!2026');
   });
