@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode, type ElementType, forwardRef } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode, type ElementType, forwardRef, type MutableRefObject, type HTMLAttributes } from 'react';
 import { cn } from '@/lib/format';
 
 export interface RevealContextValue {
@@ -12,7 +12,7 @@ export function Eyebrow({ children, className }: { children: ReactNode; classNam
 }
 
 export function useInView(options: IntersectionObserverInit = { threshold: 0.2, rootMargin: '0px 0px -10% 0px' }) {
-  const ref = useRef<any>(null);
+  const ref = useRef<HTMLElement | null>(null);
   const [isInView, setIsInView] = useState(false);
 
   useEffect(() => {
@@ -38,14 +38,13 @@ export function useInView(options: IntersectionObserverInit = { threshold: 0.2, 
   return { ref, isInView };
 }
 
-export interface RevealProps {
+export interface RevealProps extends HTMLAttributes<HTMLElement> {
   children: ReactNode;
   className?: string;
   as?: ElementType;
   delay?: number;
   variant?: 'fade-up' | 'scale' | 'fade';
   inViewOverride?: boolean;
-  [key: string]: any;
 }
 
 export const Reveal = forwardRef<HTMLElement, RevealProps>(
@@ -64,10 +63,10 @@ export const Reveal = forwardRef<HTMLElement, RevealProps>(
 
     return (
       <Comp
-        ref={(node: any) => {
+        ref={(node: HTMLElement | null) => {
           if (context === undefined && inViewOverride === undefined) ref.current = node;
           if (typeof forwardedRef === 'function') forwardedRef(node);
-          else if (forwardedRef) (forwardedRef as any).current = node;
+          else if (forwardedRef) (forwardedRef as MutableRefObject<HTMLElement | null>).current = node;
         }}
         className={cn('transition-all duration-[600ms] ease-out will-change-[transform,opacity]', variantClasses, className)}
         style={delay ? { transitionDelay: `${delay}ms` } : undefined}
@@ -79,67 +78,73 @@ export const Reveal = forwardRef<HTMLElement, RevealProps>(
   }
 );
 
-export const RevealSection = forwardRef<HTMLElement, {
+export interface RevealSectionProps extends HTMLAttributes<HTMLElement> {
   children: ReactNode;
   className?: string;
   as?: ElementType;
   inViewOverride?: boolean;
   id?: string;
   'aria-labelledby'?: string;
-  [key: string]: any;
-}>(({ children, className, as: Comp = 'section', inViewOverride, ...props }, forwardedRef) => {
-  const { ref, isInView } = useInView({ threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
-  const active = inViewOverride ?? isInView;
+}
 
-  return (
-    <RevealContext.Provider value={{ inView: active }}>
-      <Comp
-        ref={(node: any) => {
-          if (!inViewOverride) ref.current = node;
-          if (typeof forwardedRef === 'function') forwardedRef(node);
-          else if (forwardedRef) (forwardedRef as any).current = node;
-        }}
-        className={cn(
-          'transition-all duration-[600ms] ease-out will-change-[transform,opacity]',
-          active ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6',
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </Comp>
-    </RevealContext.Provider>
-  );
-});
+export const RevealSection = forwardRef<HTMLElement, RevealSectionProps>(
+  ({ children, className, as: Comp = 'section', inViewOverride, ...props }, forwardedRef) => {
+    const { ref, isInView } = useInView({ threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
+    const active = inViewOverride ?? isInView;
 
-export const RevealGroup = forwardRef<HTMLElement, {
+    return (
+      <RevealContext.Provider value={{ inView: active }}>
+        <Comp
+          ref={(node: HTMLElement | null) => {
+            if (!inViewOverride) ref.current = node;
+            if (typeof forwardedRef === 'function') forwardedRef(node);
+            else if (forwardedRef) (forwardedRef as MutableRefObject<HTMLElement | null>).current = node;
+          }}
+          className={cn(
+            'transition-all duration-[600ms] ease-out will-change-[transform,opacity]',
+            active ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6',
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </Comp>
+      </RevealContext.Provider>
+    );
+  }
+);
+
+export interface RevealGroupProps extends HTMLAttributes<HTMLElement> {
   children: ReactNode;
   className?: string;
   as?: ElementType;
   inViewOverride?: boolean;
-  [key: string]: any;
-}>(({ children, className, as: Comp = 'div', inViewOverride, ...props }, forwardedRef) => {
-  const parentContext = useContext(RevealContext);
-  const { ref, isInView } = useInView();
-  
-  const active = inViewOverride !== undefined ? inViewOverride : (parentContext !== undefined ? parentContext.inView : isInView);
+}
 
-  return (
-    <RevealContext.Provider value={{ inView: active }}>
-      <Comp
-        ref={(node: any) => {
-          if (parentContext === undefined && inViewOverride === undefined) ref.current = node;
-          if (typeof forwardedRef === 'function') forwardedRef(node);
-          else if (forwardedRef) (forwardedRef as any).current = node;
-        }}
-        className={className}
-        {...props}
-      >
-        {children}
-      </Comp>
-    </RevealContext.Provider>
-  );
-});
+export const RevealGroup = forwardRef<HTMLElement, RevealGroupProps>(
+  ({ children, className, as: Comp = 'div', inViewOverride, ...props }, forwardedRef) => {
+    const parentContext = useContext(RevealContext);
+    const { ref, isInView } = useInView();
+    
+    const active = inViewOverride !== undefined ? inViewOverride : (parentContext !== undefined ? parentContext.inView : isInView);
+
+    return (
+      <RevealContext.Provider value={{ inView: active }}>
+        <Comp
+          ref={(node: HTMLElement | null) => {
+            if (parentContext === undefined && inViewOverride === undefined) ref.current = node;
+            if (typeof forwardedRef === 'function') forwardedRef(node);
+            else if (forwardedRef) (forwardedRef as MutableRefObject<HTMLElement | null>).current = node;
+          }}
+          className={className}
+          {...props}
+        >
+          {children}
+        </Comp>
+      </RevealContext.Provider>
+    );
+  }
+);
 
 export function SectionHeading({ eyebrow, light, bold, lede, id, align = 'left' }: { eyebrow: string; light: string; bold: string; lede?: ReactNode; id?: string; align?: 'left' | 'center' }) {
   return (
@@ -183,7 +188,6 @@ export function AnimatedNumber({ value, format, delay = 0 }: { value: number; fo
 
     let startTimestamp: number | null = null;
     let rafId: number;
-    let timeoutId: ReturnType<typeof setTimeout>;
 
     const step = (timestamp: number) => {
       if (!startTimestamp) startTimestamp = timestamp;
@@ -205,7 +209,7 @@ export function AnimatedNumber({ value, format, delay = 0 }: { value: number; fo
       }
     };
 
-    timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       rafId = requestAnimationFrame(step);
     }, initialDelay);
 
