@@ -1,0 +1,138 @@
+@import 'tailwindcss';
+
+/* RefillBridge design tokens — calm, clinical, trustworthy.
+   Ice-blue surfaces + deep teal ink, inspired by an airy operating-room palette. */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Manrope', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-brand-50: #f2f9fb;
+  --color-brand-100: #e4f2f6;
+  --color-brand-200: #c9e5ec;
+  --color-brand-300: #9fcfdb;
+  --color-brand-400: #67b0c2;
+  --color-brand-500: #3a91a6;
+  --color-brand-600: #2a768a;
+  --color-brand-700: #215f70;
+  --color-brand-800: #1b4d5b;
+  --color-brand-900: #143b46;
+  --color-brand-950: #0c2830;
+
+  --color-ice-50: #f7fbfc;
+  --color-ice-100: #eef6f8;
+  --color-ice-200: #e1eef2;
+  --color-ice-300: #cfe2e8;
+
+  --color-ink-900: #0f2a33;
+  --color-ink-700: #2c4852;
+  --color-ink-600: #45616b;
+  --color-ink-500: #647c85;
+  --color-ink-400: #8a9ea5;
+  --color-line: #d7e5ea;
+  --color-line-strong: #bcd3db;
+
+  --color-ok-50: #ecf8f1;
+  --color-ok-600: #1b7f50;
+  --color-ok-700: #166a43;
+  --color-warn-50: #fff6e6;
+  --color-warn-600: #a86411;
+  --color-warn-700: #8a520e;
+  --color-bad-50: #fdeeed;
+  --color-bad-600: #bb3a33;
+  --color-bad-700: #9c2f29;
+  --color-info-50: #edf4fc;
+  --color-info-600: #2d67a8;
+  --color-info-700: #24558c;
+
+  --radius-card: 0.75rem;
+  --radius-input: 0.5rem;
+
+  --shadow-soft: 0 1px 2px rgb(15 42 51 / 0.04), 0 4px 16px -4px rgb(15 42 51 / 0.08);
+  --shadow-lift: 0 2px 4px rgb(15 42 51 / 0.05), 0 16px 40px -12px rgb(20 59 70 / 0.22);
+  --shadow-glow: 0 0 0 1px rgb(58 145 166 / 0.18), 0 12px 32px -8px rgb(58 145 166 / 0.35);
+
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes pulse-ring {
+    0% { transform: scale(0.9); opacity: 0.7; }
+    100% { transform: scale(1.9); opacity: 0; }
+  }
+  @keyframes shimmer {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-ice-100 font-sans text-ink-900;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: var(--color-brand-200);
+  }
+}
+
+@layer components {
+  .surface {
+    @apply rounded-[var(--radius-card)] border border-line bg-white shadow-[var(--shadow-soft)];
+  }
+  .glass {
+    @apply border border-white/60 bg-white/70 backdrop-blur-xl;
+  }
+  .skeleton {
+    background: linear-gradient(90deg, var(--color-ice-200) 0px, var(--color-ice-50) 120px, var(--color-ice-200) 240px);
+    background-size: 800px 100%;
+    @apply animate-shimmer rounded-md;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .app-backdrop {
+    background:
+      radial-gradient(1200px 600px at 100% -10%, rgb(201 229 236 / 0.55), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgb(228 242 246 / 0.9), transparent 60%),
+      var(--color-ice-100);
+  }
+  .hero-backdrop {
+    background:
+      radial-gradient(900px 520px at 78% 18%, rgb(255 255 255 / 0.95), transparent 60%),
+      radial-gradient(700px 480px at 12% 80%, rgb(159 207 219 / 0.35), transparent 65%),
+      linear-gradient(180deg, #eaf5f8 0%, #f4fafb 55%, #eef6f8 100%);
+  }
+  .window-light {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.55) 2px, transparent 2px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.55) 2px, transparent 2px);
+    background-size: 120px 150px;
+    mask-image: radial-gradient(ellipse at 70% 30%, black 20%, transparent 70%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
