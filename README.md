@@ -34,7 +34,7 @@ The judges evaluate three parts: **01 Product** (engineering, security, reliabil
 | Design system (ice-blue/teal medical theme, Manrope + Inter, motion animations) | ✅ Done (the user plans to refine the UI themselves) |
 | Tests | ✅ **180 passing** (`npm test`); lint clean; typecheck clean; build OK (≈193 KB gzipped JS) |
 | Docs | ✅ README.md (this file), FLOWS.md, TESTING.md |
-| Git | ✅ Initial commit on `master`. Uncommitted since: FLOWS.md, TESTING.md edits, this README |
+| Git | ✅ 2 commits on `master` (app + docs) |
 | **Real back end** (Supabase Postgres + RLS, Auth, Edge Functions API, pgmq, pg_cron, pgTAP) | ❌ Not started (Phase 5) |
 | **Real AI** (Claude via server-side gateway) | ❌ Not started. The mock AI runs behind the same interface |
 | **Real integrations** (pharmacy NCPDP, SMS/email, EHR) | ❌ Simulated inside the mock engine |
@@ -214,7 +214,7 @@ The seeded demo cases cover every state and every blocker. See FLOWS.md §4C for
 ## 9. What is pending: next steps in order
 
 ### A. Quick wins (do first, cheap, high judging value)
-1. **Commit** the current docs (FLOWS.md, TESTING.md, README.md).
+1. Keep committing after each step (docs are already committed).
 2. **Write `GTM.md`** (brief §10 and Phase 6):
    - the 8-stage funnel table (Nothing → Prospect → Data analysis → TOFU → MOFU → BOFU → Close → Customer success) with what we do, signals and metric for each stage
    - the ICP (US primary- and chronic-care groups, 5–50 providers) and who feels, uses, buys, influences and pays
